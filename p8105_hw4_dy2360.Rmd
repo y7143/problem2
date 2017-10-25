@@ -1,0 +1,18 @@
+---
+title: "p8105_hw4_dy2360"
+author: "Dong Yuan"
+output: html_document
+---
+```{r load_package}
+library(tidyverse)
+library(janitor)
+```
+
+
+```{r read_clean}
+pups = read_csv("./data/FAS_pups.csv") %>% 
+   clean_names() %>% 
+    gather(key = PD_outcome,value = days, pd_ears:pd_walk)
+```
+
+
