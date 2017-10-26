@@ -6,13 +6,26 @@ output: html_document
 ```{r load_package}
 library(tidyverse)
 library(janitor)
+library(lubridate)
 ```
 
 
 ```{r read_clean}
-pups = read_csv("./data/FAS_pups.csv") %>% 
-   clean_names() %>% 
-    gather(key = PD_outcome,value = days, pd_ears:pd_walk)
+pols = read_csv("./data/pols-month.csv") %>% 
+  clean_names()
+
+gdp = read_csv("./data/gdp.csv") %>% 
+  clean_names() %>% 
+  mutate(value = as.numeric(value))
 ```
+
+```{r combine_data}
+pols2 = 
+  pols$mon %>% lubridate::floor_date(unit = "month") %>% 
+  mutate(pols,date = .) %>% 
+  left_join(.,gdp,by = "date") %>% 
+  select(-date)
+```
+
 
 
