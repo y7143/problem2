@@ -3,29 +3,60 @@ title: "p8105_hw4_dy2360"
 author: "Dong Yuan"
 output: html_document
 ---
-```{r load_package}
+```{r load_package, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(janitor)
 library(lubridate)
 ```
 
+#Problem2
+This problem uses the 538 datasets. Because this dataset is small and can be made public you should include that data file in your directory for this problem, and load that data file using relative paths.
 
-```{r read_clean}
+The project lead will load and tidy the data for this problem. Combine the data in pols-month.csv and GDP.csv based on the date / month (use lubridate::floor_date to collase dates to the first day of the month).
+```{r read_clean, massage = FALSE, warning = FALSE}
 pols = read_csv("./data/pols-month.csv") %>% 
-  clean_names()
+  clean_names() %>%
+  mutate(president = ifelse(prez_gop == 1, "gop", "dem")) %>%
+  select(-prez_gop, -prez_dem)
 
 gdp = read_csv("./data/gdp.csv") %>% 
   clean_names() %>% 
   mutate(value = as.numeric(value))
 ```
 
-```{r combine_data}
-pols2 = 
-  pols$mon %>% lubridate::floor_date(unit = "month") %>% 
+```{r combine_data, massage = FALSE, warning = FALSE}
+pols_gdp = 
+  pols$mon %>% 
+  floor_date(unit = "month") %>% 
   mutate(pols,date = .) %>% 
   left_join(.,gdp,by = "date") %>% 
   select(-date)
 ```
 
+The collaborator will create a plot showing the GDP value over time, including the party of the president in an informative aesthetic.
+
+##Plot for problem2
+In this problem, Shuang WU is my collaborator and he makes the following plot and interprets it with me.
+```{r plot, massage = FALSE, warning = FALSE}
+#annual gdp over time
+pols_gdp %>%
+  mutate(year = year(mon)) %>%
+  select(year, president, value ,everything()) %>%
+  group_by(year, president) %>%
+  summarise(annual_value = mean(value, na.rm = T)) %>%
+  ggplot(aes(x = year, y = annual_value)) +
+  geom_point(aes(color = president), na.rm = T, size = 3.5, alpha = 0.85) +
+  geom_line() +
+  ggtitle("Annual gdp over time") +
+  labs(x = "Year", y = "GDP") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+We decide to make a plot which can show the annual GDP value and mark the point with party of the president, since there are too many missing data of monthly GDP value but almost every year has at least one GDP value.
+
+From this plot, we find that:
+* The GDP values after 1990 are lower compared to those before 1990.
+* There is not a obvious difference of annual GDP between these two parties. We interpret this fact as that the GDP value does not mainly depend on the party of president.
+* The total trend of GDP value is decreasing after 1980.
 
 
